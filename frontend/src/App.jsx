@@ -8,6 +8,7 @@ import Upload from './pages/Upload'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import MyUploads from './pages/MyUploads'
+import NotFound from './pages/NotFound'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/my-uploads" element={<MyUploads />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
     </div>

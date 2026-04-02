@@ -175,9 +175,9 @@ router.post("/upload", auth, upload.single("image"), async (req, res) => {
 
     // For the UI, we need the PUBLIC accessible URL.
     // If we're in Docker, internal is minio:9000, but public is localhost:9200.
-    const publicHost = process.env.PUBLIC_MINIO_ENDPOINT || "localhost";
-    const publicPort = process.env.PUBLIC_MINIO_PORT || "9200";
-    const fileUrl = `http://${publicHost}:${publicPort}/${bucketName}/${fileName}`;
+    // In production, use the public storage URL if provided (e.g., Minio or S3 public endpoint)
+    const storeUrl = process.env.PUBLIC_IMAGES_URL || `http://${process.env.PUBLIC_MINIO_ENDPOINT || 'localhost'}:${process.env.PUBLIC_MINIO_PORT || '9200'}`;
+    const fileUrl = `${storeUrl}/${bucketName}/${fileName}`;
 
     const newImage = new Image({
       url: fileUrl,

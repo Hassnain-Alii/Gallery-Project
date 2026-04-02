@@ -44,17 +44,7 @@ export default function Explore() {
       if (!res.ok) throw new Error("API failed");
       const data = await res.json();
       
-      // Auto-fix for legacy images or environment mismatches
-      const fixedImages = data.images.map(img => {
-        let fixedUrl = img.url;
-        // Fix for internal Docker hostnames or wrong ports
-        if (fixedUrl.includes(':9000/')) fixedUrl = fixedUrl.replace(':9000/', ':9200/');
-        if (fixedUrl.includes('//minio:')) fixedUrl = fixedUrl.replace('//minio:', '//localhost:');
-        
-        return { ...img, url: fixedUrl };
-      });
-      
-      setImages(fixedImages);
+      setImages(data.images);
       setTotalPages(data.totalPages);
     } catch (err) {
       setError(true);
