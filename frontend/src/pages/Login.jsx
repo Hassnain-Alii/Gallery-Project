@@ -127,6 +127,7 @@ export default function Login() {
                 onSuccess={handleGoogleSuccess}
                 onError={() => toast.error('Google Sign-In failed')}
                 useOneTap
+                use_fedcm_for_prompt={false}
                 width="100%"
                 theme="filled_blue"
                 shape="pill"

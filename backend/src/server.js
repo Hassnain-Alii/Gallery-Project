@@ -13,12 +13,30 @@ const favoriteRoutes = require('./routes/favorites')
 
 const app = express()
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://gallery-project-frontend.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:3000'
+].filter(Boolean);
+
 // Middleware
-app.use(helmet())
+app.use(helmet({
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  crossOriginEmbedderPolicy: false,
+}))
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'https://gallery-project-frontend.vercel.app',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }))
 app.use(pinoHttp)
 app.use(express.json())
@@ -58,12 +76,12 @@ app.use((err, req, res, next) => {
   
   // Ensure CORS headers are present even on errors
   const origin = req.headers.origin;
-  const allowedOrigin = process.env.FRONTEND_URL || 'https://gallery-project-frontend.vercel.app';
-  if (origin === allowedOrigin) {
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
-    res.setHeader('Access-Control-Allow-Origin', allowedOrigin); // Fallback to primary origin
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
   }
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   res.status(500).json({ 
     message: "Internal Server Error", 
