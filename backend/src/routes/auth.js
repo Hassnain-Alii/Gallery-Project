@@ -197,8 +197,11 @@ router.post('/google', async (req, res) => {
 
 // ─── AUTHENTICATED ROUTES ────────────────────────────────────────────────────
 const auth = require('../middleware/auth');
-const multer = require('multer');
-const { minioClient } = require('../config/minio');
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_ANON_KEY
+);
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -210,33 +213,29 @@ router.post('/avatar', auth, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
 
-    const fileName = `avatar-${req.user.userId}-${Date.now()}-${req.file.originalname.replace(/\s+/g, '_')}`;
-    const bucketName = 'images'; // Using existing public bucket
+    const fileName = `avatar-${req.user.userId}-${Date.now()}.png`;
+    const bucketName = 'gallery';
 
-    await minioClient.putObject(
-      bucketName,
-      fileName,
-      req.file.buffer,
-      req.file.size,
-      { 'Content-Type': req.file.mimetype }
-    );
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
 
-    const publicHost = process.env.PUBLIC_MINIO_ENDPOINT || 'localhost';
-    const publicPort = process.env.PUBLIC_MINIO_PORT || '9200';
-    const fileUrl = `http://${publicHost}:${publicPort}/${bucketName}/${fileName}`;
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage.from(bucketName).getPublicUrl(fileName);
 
     const user = await User.findById(req.user.userId);
-    user.picture = fileUrl;
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    user.picture = publicUrl;
     await user.save();
 
-    res.json({ 
-      message: 'Avatar uploaded successfully', 
-      picture: fileUrl 
-    });
+    res.json({ message: 'Avatar uploaded successfully', picture: publicUrl });
   } catch (error) {
     res.status(500).json({ message: 'Avatar upload failed', error: error.message });
   }
 });
+
 
 // ─── PUT /auth/profile ───────────────────────────────────────────────────────
 router.put('/profile', auth, async (req, res) => {
