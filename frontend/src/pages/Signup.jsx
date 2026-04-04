@@ -149,7 +149,7 @@ export default function Signup() {
           </div>
 
           <div className="flex justify-center">
-            <div className="w-full max-w-sm">
+            <div className="w-full text-center">
               <GoogleLogin
                 onSuccess={handleGoogleSuccess}
                 onError={() => toast.error('Google Sign-In failed')}
