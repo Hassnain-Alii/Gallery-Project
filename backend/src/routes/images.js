@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const multer = require("multer");
 const Image = require("../models/Image");
 const auth = require("../middleware/auth");
@@ -19,13 +20,23 @@ const upload = multer({
 // GET /images/authors
 router.get("/authors", async (req, res) => {
   try {
-    const cachedAuthors = await redisClient.get("gallery:authors").catch(() => null);
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ message: "Database not connected" });
+    }
+
+    // Use a short timeout for Redis to avoid hanging
+    const cachedAuthors = await Promise.race([
+      redisClient.get("gallery:authors"),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Redis Timeout")), 1500))
+    ]).catch(() => null);
+
     if (cachedAuthors) return res.json(JSON.parse(cachedAuthors));
     
     const authors = await Image.distinct("author");
     await redisClient.setex("gallery:authors", 3600, JSON.stringify(authors)).catch(() => {});
     res.json(authors);
   } catch (error) {
+    console.error("Authors Error:",   error.message);
     res.status(500).json({ message: "Error fetching authors", error: error.message });
   }
 });
@@ -33,22 +44,31 @@ router.get("/authors", async (req, res) => {
 // GET /images
 router.get("/", async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error("Database not connected");
+    }
+
     const { page = 1, limit = 15, search, author } = req.query;
-    const count = await Image.countDocuments().catch(() => 0);
+    const count = await Image.countDocuments().catch(() => -1);
     
-    if (count < 10 && !search && (author === "All" || !author)) {
-      const User = require("../models/User");
-      let admin = await User.findOne({ email: "admin@gallery.com" });
-      if (!admin) {
-        admin = await User.create({ name: "Admin", email: "admin@gallery.com", password: "root" });
+    // Seed logic only if empty and not search/filtering
+    if (count === 0 && !search && (!author || author === "All")) {
+      try {
+        const User = require("../models/User");
+        let admin = await User.findOne({ email: "admin@gallery.com" });
+        if (!admin) {
+          admin = await User.create({ name: "Admin", email: "admin@gallery.com", password: "root" });
+        }
+        const response = await fetch("https://picsum.photos/v2/list?page=1&limit=50");
+        const data = await response.json();
+        const docs = data.map(img => ({
+          url: img.download_url, author: img.author, width: img.width, height: img.height, uploadedBy: admin._id
+        }));
+        await Image.insertMany(docs);
+        await redisClient.del("gallery:authors").catch(() => {});
+      } catch (seedErr) {
+        console.error("Seeding error:",  seedErr.message);
       }
-      const response = await fetch("https://picsum.photos/v2/list?page=1&limit=50");
-      const data = await response.json();
-      const docs = data.map(img => ({
-        url: img.download_url, author: img.author, width: img.width, height: img.height, uploadedBy: admin._id
-      }));
-      await Image.insertMany(docs);
-      await redisClient.del("gallery:authors").catch(() => {});
     }
 
     const query = {};
@@ -61,6 +81,7 @@ router.get("/", async (req, res) => {
 
     res.json({ images, totalPages: Math.ceil(total / limit), currentPage: parseInt(page) });
   } catch (error) {
+    console.error("Images Error:",  error.message);
     res.status(500).json({ message: "Error fetching images", error: error.message });
   }
 });

@@ -55,6 +55,16 @@ app.use((err, req, res, next) => {
     path: req.path,
     method: req.method
   });
+  
+  // Ensure CORS headers are present even on errors
+  const origin = req.headers.origin;
+  const allowedOrigin = process.env.FRONTEND_URL || 'https://gallery-project-frontend.vercel.app';
+  if (origin === allowedOrigin) {
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin); // Fallback to primary origin
+  }
+
   res.status(500).json({ 
     message: "Internal Server Error", 
     error: process.env.NODE_ENV === 'production' ? "Check server logs for details" : err.message 
