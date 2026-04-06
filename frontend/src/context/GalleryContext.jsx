@@ -7,6 +7,7 @@ export const GalleryProvider = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeAuthor, setActiveAuthor] = useState('All');
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [isGlobalLoading, setIsGlobalLoading] = useState(false);
   
   const apiBaseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
@@ -115,6 +116,8 @@ export const GalleryProvider = ({ children }) => {
       setActiveAuthor,
       theme,
       toggleTheme,
+      isGlobalLoading,
+      setIsGlobalLoading,
       apiBaseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000'
     }}>
       {children}

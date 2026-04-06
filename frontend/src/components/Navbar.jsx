@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useGallery } from '../context/GalleryContext';
-import { Search, Heart, Upload, Compass, LogOut, Sun, Moon, User as UserIcon } from 'lucide-react';
+import { Search, Heart, Upload, Compass, LogOut, Sun, Moon, User as UserIcon, Loader2 } from 'lucide-react';
 import AccountModal from './AccountModal';
 
 export default function Navbar() {
-  const { user, logout, searchQuery, setSearchQuery, theme, toggleTheme } = useGallery();
+  const { user, logout, searchQuery, setSearchQuery, theme, toggleTheme, isGlobalLoading } = useGallery();
   const [isAccountModalOpen, setIsAccountModalOpen] = useState(false);
   const location = useLocation();
 
@@ -25,7 +25,11 @@ export default function Navbar() {
         
         <div className="flex-1 max-w-xl hidden md:block">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            {isGlobalLoading ? (
+              <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-primary-500 animate-spin" />
+            ) : (
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            )}
             <input 
               type="text" 
               placeholder="Search by author..."

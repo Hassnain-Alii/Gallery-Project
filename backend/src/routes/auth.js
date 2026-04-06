@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const sharp = require('sharp');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -213,13 +214,19 @@ const upload = multer({
 router.post('/avatar', auth, upload.single('avatar'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    
+    // Optimize avatar
+    const optimizedBuffer = await sharp(req.file.buffer)
+      .resize(400, 400, { fit: 'cover' })
+      .webp({ quality: 80 })
+      .toBuffer();
 
-    const fileName = `avatar-${req.user.userId}-${Date.now()}.png`;
+    const fileName = `avatar-${req.user.userId}-${Date.now()}.webp`;
     const bucketName = 'gallery';
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucketName)
-      .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+      .upload(fileName, optimizedBuffer, { contentType: 'image/webp' });
 
     if (uploadError) throw uploadError;
 

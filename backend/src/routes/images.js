@@ -6,6 +6,7 @@ const Image = require("../models/Image");
 const auth = require("../middleware/auth");
 const { createClient } = require("@supabase/supabase-js");
 const redisClient = require("../config/redis");
+const sharp = require("sharp"); // for optimization
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -20,9 +21,9 @@ const upload = multer({
 // GET /images/authors
 router.get("/authors", async (req, res) => {
   try {
-    // On Vercel, state might be 2 (connecting) when first hit. That's fine.
-    if (mongoose.connection.readyState === 0) {
-      return res.status(503).json({ message: "Database not connected" });
+    // Wait for connection if it's still connecting
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connection.asPromise();
     }
 
     // Use a short timeout for Redis to avoid hanging
@@ -48,10 +49,11 @@ router.get("/authors", async (req, res) => {
 // GET /images
 router.get("/", async (req, res) => {
   try {
-    // On Vercel, allow state 2 (connecting). Mongoose will buffer queries until connected.
-    if (mongoose.connection.readyState === 0) {
-      throw new Error("Database not connected");
+    // Wait for connection if it's still connecting
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connection.asPromise();
     }
+
 
     const { page = 1, limit = 15, search, author } = req.query;
     const count = await Image.countDocuments().catch(() => -1);
@@ -64,17 +66,32 @@ router.get("/", async (req, res) => {
         if (!admin) {
           admin = await User.create({ name: "Admin", email: "admin@gallery.com", password: "root" });
         }
-        const response = await fetch("https://picsum.photos/v2/list?page=1&limit=50");
+        
+        // Use a 3-second timeout for the Picsum fetch to avoid blocking the whole request
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        const response = await fetch("https://picsum.photos/v2/list?page=1&limit=30", { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
         const data = await response.json();
-        const docs = data.map(img => ({
-          url: img.download_url, author: img.author, width: img.width, height: img.height, uploadedBy: admin._id
-        }));
+        const docs = data.map(img => {
+          const optimizedUrl = `https://picsum.photos/id/${img.id}/800/1000`;
+          return {
+            url: optimizedUrl, 
+            author: img.author, 
+            width: 800, 
+            height: 1000, 
+            uploadedBy: admin._id
+          };
+        });
         await Image.insertMany(docs);
         await redisClient.del("gallery:authors").catch(() => {});
       } catch (seedErr) {
-        console.error("Seeding error:",  seedErr.message);
+        console.warn("Seeding skipped or failed:", seedErr.message);
       }
     }
+
 
     const query = {};
     if (author && author !== "All") query.author = author;
@@ -95,11 +112,18 @@ router.get("/", async (req, res) => {
 router.post("/upload", auth, upload.single("image"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "No file" });
-    const fileName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, "_")}`;
+    
+    // Optimize with sharp
+    const optimizedBuffer = await sharp(req.file.buffer)
+      .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toBuffer();
+
+    const fileName = `${Date.now()}-${req.file.originalname.replace(/\s+/g, "_").split('.')[0]}.webp`;
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("gallery")
-      .upload(fileName, req.file.buffer, { contentType: req.file.mimetype });
+      .upload(fileName, optimizedBuffer, { contentType: 'image/webp' });
 
     if (uploadError) throw uploadError;
 

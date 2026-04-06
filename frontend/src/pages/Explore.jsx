@@ -8,7 +8,7 @@ import { Loader2, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function Explore() {
-  const { apiBaseURL, user, searchQuery, activeAuthor } = useGallery();
+  const { apiBaseURL, user, searchQuery, activeAuthor, setIsGlobalLoading } = useGallery();
   const debouncedSearch = useDebounce(searchQuery, 300);
   
   const [images, setImages] = useState([]);
@@ -34,6 +34,7 @@ export default function Explore() {
 
   const fetchImages = useCallback(async () => {
     setLoading(true);
+    if (typeof setIsGlobalLoading === 'function') setIsGlobalLoading(true);
     setError(false);
     try {
       const params = new URLSearchParams({ page, limit: 15 });
@@ -49,6 +50,7 @@ export default function Explore() {
     } catch (err) {
       setError(true);
     } finally {
+      if (typeof setIsGlobalLoading === 'function') setIsGlobalLoading(false);
       setLoading(false);
     }
   }, [apiBaseURL, page, activeAuthor, debouncedSearch]);
