@@ -2,6 +2,7 @@
 
 A visually stunning, high-performance, and enterprise-grade modern Portfolio & Image Hub. This application features a highly polished design system employing glassmorphism, fluid micro-animations, and robust security mechanisms, making it a state-of-the-art MERN deployment.
 
+**Frontend Live:** [https://gallery-project-frontend.vercel.app]
 ---
 
 ## 💫 App Capabilities & Features
@@ -9,12 +10,11 @@ A visually stunning, high-performance, and enterprise-grade modern Portfolio & I
 ### 🖥️ Frontend (Vite + React)
 - **Stunning UI/UX**: Built with an advanced custom design system utilizing glassmorphism, dynamic gradients, and smooth animations.
 - **Drag & Drop (DnD)**: Modern, intuitive file movement for image uploads with smooth drag-over animations and instant previews.
-- **CRUD Operations**: Create, Read, and Filter images seamlessly with premium UI updates.
-- **Advanced Filtering & Search**: Instant search by author and title across the entire collection with smart debounce logic.
+- **Image Optimization (Sharp)**: Automatically resizes and converts uploads to **WebP** for ultra-fast loading times.
+- **Advanced Filtering & Search**: Instant search by author across the entire collection with smart debounce logic and animated loading feedback.
 - **Favorites & Collections**: One-click persistent "Favorite" system to curate your personal digital collection.
-- **One-Click Downloads**: High-speed downloads for all images, allowing users to save assets locally in a single click.
+- **One-Click Downloads**: High-speed downloads for all images with real-time progress indicators.
 - **Micro-Animations**: Uses modern CSS transitions and Lucide-react for an interactive, premium feel.
-- **Responsive Layouts for Modern Web**: Fully optimized for mobile, tablet, and ultra-wide monitor viewports.
 
 ### ⚙️ Backend (Node.js + Express)
 - **Redis Caching**: Accelerated performance for frequent data queries (like author listing) using an in-memory Redis cluster.
@@ -91,33 +91,23 @@ We prioritize the safety of your data with an enterprise-grade security stack.
 ## 🏗️ Infrastructure Components
 
 ### 1. **Docker & Docker Compose**
-- **What is it?** A platform for containerization and a tool for defining and running multi-container applications.
-- **Why we use it?** It ensures the application runs identically on any machine. Our `docker-compose.yml` orchestrates the entire stack (Node, Mongo, Redis, MinIO) in isolated, secure networks, making deployment as simple as one command.
+Ensures the application runs identically on any machine. Our `docker-compose.yml` orchestrates the entire stack (Node, Mongo, Redis) in isolated, secure networks, making deployment as simple as one command.
 
 ### 2. **Redis In-Memory Data Store**
-- **What is it?** A high-performance, key-value storage system typically used for caching.
-- **Why we use it?** To reduce database load and speed up data retrieval. By caching task boards in Redis, we achieve near-instant response times for returning users.
+Reduces database load and speeds up data retrieval. By caching metadata in Redis, we achieve near-instant response times for returning users.
 
 ### 3. **Supabase Cloud Storage**
-- **What is it?** A cloud-native object storage system built for developers.
-- **Why we use it?** To handle high-performance file storage (like user images and avatars) with a "forever free" tier, ensuring a cost-effective and enterprise-grade production environment.
+Handles high-performance file storage (like user images and avatars) with a "forever free" tier, ensuring a cost-effective and enterprise-grade production environment.
 
 ---
 
 ## 🐳 Quick Start (Docker Orchestration)
 
-To spin up the entire cluster quickly:
+To spin up the local development cluster quickly:
 
 ```bash
-# To spin up the entire cluster quickly:
+# Start all core services in detached mode
 docker-compose up -d
 ```
-
-This single command orchestrates:
-1.  **Node.js Express Server**: High-performance API server.
-2.  **MongoDB Database**: Standard NoSQL data persistence.
-3.  **Redis Cluster**: Accelerated data caching.
-4.  **Supabase Integration**: Cloud-native asset management.
-5.  **React Client App**: Vite-powered premium frontend.
 
 *Open `http://localhost:5175` and enjoy the product!*
