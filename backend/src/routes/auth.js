@@ -199,10 +199,10 @@ router.post('/google', async (req, res) => {
       } 
     });
   } catch (error) {
-    console.error(' [Google Auth Error]:', error); // Full error for backend logs
+    console.error(' [Google Auth Error]:', error.message);
     res.status(401).json({ 
       message: 'Google authentication failed', 
-      details: error.message // Helps frontend debugging
+      details: error.message 
     });
   }
 });

@@ -23,7 +23,7 @@ const allowedOrigins = [
 
 // Middleware
 app.use(helmet({
-  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  crossOriginOpenerPolicy: { policy: "unsafe-none" }, // Relaxed to allow Google OAuth popups
   crossOriginEmbedderPolicy: false,
 }))
 
