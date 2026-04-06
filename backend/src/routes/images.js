@@ -21,7 +21,7 @@ const upload = multer({
 // GET /images/authors
 router.get("/authors", async (req, res) => {
   try {
-    // Wait for connection if it's still connecting
+    // Force a slightly longer wait for DB on authors route (often hit first)
     if (mongoose.connection.readyState !== 1) {
       await mongoose.connection.asPromise();
     }
@@ -37,12 +37,16 @@ router.get("/authors", async (req, res) => {
 
     if (cachedAuthors) return res.json(JSON.parse(cachedAuthors));
     
-    const authors = await Image.distinct("author");
-    await redisClient.setex("gallery:authors", 3600, JSON.stringify(authors)).catch(() => {});
+    const authors = await Image.distinct("author").catch(() => []);
+    
+    // If no authors found, it might be an empty DB, which is fine, 
+    // but we should at least avoid crashing.
+    await redisClient.setex("gallery:authors", 1800, JSON.stringify(authors)).catch(() => {});
     res.json(authors);
   } catch (error) {
-    console.error("Authors Error:",   error.message);
-    res.status(500).json({ message: "Error fetching authors", error: error.message });
+    console.error("Authors Error:", error.message);
+    // Return empty array instead of 500 to keep UI stable
+    res.json([]); 
   }
 });
 

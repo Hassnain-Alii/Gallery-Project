@@ -30,20 +30,30 @@ export default function Sidebar() {
             <button
               onClick={() => setActiveAuthor(author)}
               className={`w-full text-left px-5 py-3 rounded-xl transition-all duration-300 group flex items-center justify-between ${
-                activeAuthor === author 
-                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30 font-bold translate-x-1' 
-                  : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 hover:pl-6'
+                activeAuthor === author
+                  ? "bg-primary-600 text-white shadow-lg shadow-primary-500/30 font-bold translate-x-1"
+                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-gray-800/50 hover:pl-6"
               }`}
             >
               <span className="truncate">{author}</span>
-              {activeAuthor === author && <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+              {activeAuthor === author && (
+                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              )}
             </button>
           </li>
         ))}
-        {authors.length === 1 && authors[0] === 'All' && (
-           <div className="text-center py-10">
-             <p className="text-gray-400 text-sm animate-pulse">Loading contributors...</p>
-           </div>
+        {authors.length === 1 && authors[0] === "All" && (
+          <div className="text-center py-10 space-y-4">
+            <p className="text-gray-400 text-sm animate-pulse italic">
+              Loading contributors...
+            </p>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-[10px] uppercase font-bold text-primary-500 hover:text-primary-600 transition-colors"
+            >
+              Force Refresh
+            </button>
+          </div>
         )}
       </ul>
     </aside>
