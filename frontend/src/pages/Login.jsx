@@ -121,20 +121,19 @@ export default function Login() {
             <div className="h-px bg-gray-200 dark:bg-gray-800 flex-1"></div>
           </div>
 
-          <div className="w-full min-h-[44px]">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={() => toast.error('Google Sign-In failed')}
-              useOneTap
-              use_fedcm_for_prompt={false}
-              width="100%"
-              theme="filled_blue"
-              shape="pill"
-              text="continue_with"
-              containerProps={{
-                style: { width: '100%', display: 'block' }
-              }}
-            />
+          <div className="flex justify-center w-full mt-4">
+            <div className="w-full max-w-[400px]">
+              <GoogleLogin
+                onSuccess={handleGoogleSuccess}
+                onError={() => toast.error('Google Sign-In failed')}
+                useOneTap
+                use_fedcm_for_prompt={false}
+                width="400"
+                theme="filled_blue"
+                shape="pill"
+                text="continue_with"
+              />
+            </div>
           </div>
           
           <p className="mt-10 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
