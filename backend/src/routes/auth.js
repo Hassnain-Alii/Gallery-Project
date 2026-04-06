@@ -8,6 +8,7 @@ const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const { OAuth2Client } = require('google-auth-library');
 const multer = require('multer');
+const mongoose = require('mongoose');
 
 // Google OAuth client (used to verify ID tokens that the browser sends us)
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -52,6 +53,9 @@ router.post('/signup', [
   }).withMessage('Password must be at least 8 characters and contain an uppercase, lowercase, number, and special character'),
 ], async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connection.asPromise();
+    }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: errors.array()[0].msg });
@@ -92,6 +96,9 @@ router.post('/login', [
   body('password').notEmpty().withMessage('Email and password are required'),
 ], async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connection.asPromise();
+    }
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: errors.array()[0].msg });
@@ -129,6 +136,9 @@ router.post('/login', [
 // Verifies it with Google's servers, then finds-or-creates a local user.
 router.post('/google', async (req, res) => {
   try {
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connection.asPromise();
+    }
     const { credential } = req.body;
     if (!credential) {
       return res.status(400).json({ message: 'Google credential is required' });
@@ -304,6 +314,9 @@ router.post('/refresh', async (req, res) => {
   if (!refreshToken) return res.status(401).json({ message: 'Refresh token required' });
 
   try {
+    if (mongoose.connection.readyState !== 1) {
+      await mongoose.connection.asPromise();
+    }
     const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh_secret_fallback');
     const user = await User.findById(payload.userId);
 
