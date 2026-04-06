@@ -17,7 +17,8 @@ const allowedOrigins = [
   process.env.FRONTEND_URL,
   'https://gallery-project-frontend.vercel.app',
   'http://localhost:5173',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://localhost:5175'
 ].filter(Boolean);
 
 // Middleware
@@ -27,10 +28,13 @@ app.use(helmet({
 }))
 
 app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+  origin: (origin, callback) => {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.warn(`[CORS Blocked]: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -69,16 +73,16 @@ app.get('/health', (req, res) => res.json({
 app.use((err, req, res, next) => {
   console.error("GLOBAL ERROR caught:", {
     message: err.message,
-    stack: err.stack,
+    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
     path: req.path,
     method: req.method
   });
   
-  // Ensure CORS headers are present even on errors
+  // Basic CORS headers to ensure the browser sees the error
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+  if (origin && allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
+  } else if (allowedOrigins.length > 0) {
     res.setHeader('Access-Control-Allow-Origin', allowedOrigins[0]);
   }
   res.setHeader('Access-Control-Allow-Credentials', 'true');

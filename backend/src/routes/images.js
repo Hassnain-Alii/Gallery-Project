@@ -20,15 +20,19 @@ const upload = multer({
 // GET /images/authors
 router.get("/authors", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
+    // On Vercel, state might be 2 (connecting) when first hit. That's fine.
+    if (mongoose.connection.readyState === 0) {
       return res.status(503).json({ message: "Database not connected" });
     }
 
     // Use a short timeout for Redis to avoid hanging
     const cachedAuthors = await Promise.race([
       redisClient.get("gallery:authors"),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("Redis Timeout")), 1500))
-    ]).catch(() => null);
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Redis Timeout")), 2000))
+    ]).catch((err) => {
+      console.warn("Redis Author Fetch Skipped:", err.message);
+      return null;
+    });
 
     if (cachedAuthors) return res.json(JSON.parse(cachedAuthors));
     
@@ -44,7 +48,8 @@ router.get("/authors", async (req, res) => {
 // GET /images
 router.get("/", async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
+    // On Vercel, allow state 2 (connecting). Mongoose will buffer queries until connected.
+    if (mongoose.connection.readyState === 0) {
       throw new Error("Database not connected");
     }
 
