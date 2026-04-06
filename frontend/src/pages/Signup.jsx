@@ -6,12 +6,19 @@ import { GoogleLogin } from '@react-oauth/google';
 import { User, Mail, Lock, Eye, EyeOff, ArrowRight, Compass, ShieldCheck } from 'lucide-react';
 
 export default function Signup() {
-  const { login, apiBaseURL } = useGallery();
+  const { user, login, apiBaseURL } = useGallery();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ name: '', email: '', password: '', confirm: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -154,7 +161,7 @@ export default function Signup() {
                 onSuccess={handleGoogleSuccess}
                 onError={() => toast.error('Google Sign-In failed')}
                 useOneTap
-                use_fedcm_for_prompt={false}
+                use_fedcm_for_prompt={true}
                 width="400"
                 theme="filled_blue"
                 shape="pill"
