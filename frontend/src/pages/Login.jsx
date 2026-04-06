@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useGallery } from '../context/GalleryContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
