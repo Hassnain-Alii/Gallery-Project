@@ -11,7 +11,7 @@ const redisOptions = {
   }
 };
 
-const redisClient = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', redisOptions);
+const redisClient = new Redis(process.env.REDIS_URL, redisOptions);
 
 redisClient.on('error', (err) => console.error('Redis error:', err.message));
 redisClient.on('connect', () => console.log('Redis connected successfully'));

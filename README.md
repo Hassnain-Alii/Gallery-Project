@@ -19,7 +19,7 @@ A visually stunning, high-performance, and enterprise-grade modern Portfolio & I
 ### ⚙️ Backend (Node.js + Express)
 - **Redis Caching**: Accelerated performance for frequent data queries (like author listing) using an in-memory Redis cluster.
 - **Response Compression**: All API responses are compressed via gzip to reduce bandwidth and speed up page loads.
-- **MinIO Object Storage**: Prepared containerized MinIO infrastructure for highly scalable, S3-compatible file/image uploads.
+- **Supabase Storage**: Cloud-native file storage integrated for high performance and "forever free" production hosting.
 - **Enterprise SSO Verification**: Server-side verification of Google ID tokens for maximum authentication security.
 - **JWT Authentication**: Secure, stateful session management with short-lived tokens and strict server-side validation.
 - **Silent Refresh Tokens**: Automatic background session renewal to maintain workflow without interruption.
@@ -79,7 +79,7 @@ We prioritize the safety of your data with an enterprise-grade security stack.
 
 - **Backend**: Node.js, Express.js
 - **Database**: MongoDB (Mongoose)
-- **Object Storage**: MinIO (S3 Compatible)
+- **Object Storage**: Supabase Storage
 - **Caching**: Redis
 - **Authentication**: JWT, Google OAuth 2.0
 - **Frontend**: React.js, Vite
@@ -98,9 +98,9 @@ We prioritize the safety of your data with an enterprise-grade security stack.
 - **What is it?** A high-performance, key-value storage system typically used for caching.
 - **Why we use it?** To reduce database load and speed up data retrieval. By caching task boards in Redis, we achieve near-instant response times for returning users.
 
-### 3. **MinIO Object Storage**
-- **What is it?** An S3-compatible high-performance object storage server.
-- **Why we use it?** To handle file storage (like user avatars) in a scalable, cloud-ready way. This keeps our database lightweight and separates binary data from relational/document data.
+### 3. **Supabase Cloud Storage**
+- **What is it?** A cloud-native object storage system built for developers.
+- **Why we use it?** To handle high-performance file storage (like user images and avatars) with a "forever free" tier, ensuring a cost-effective and enterprise-grade production environment.
 
 ---
 
@@ -117,7 +117,7 @@ This single command orchestrates:
 1.  **Node.js Express Server**: High-performance API server.
 2.  **MongoDB Database**: Standard NoSQL data persistence.
 3.  **Redis Cluster**: Accelerated data caching.
-4.  **MinIO Object Store**: S3-compatible asset management.
+4.  **Supabase Integration**: Cloud-native asset management.
 5.  **React Client App**: Vite-powered premium frontend.
 
 *Open `http://localhost:5175` and enjoy the product!*

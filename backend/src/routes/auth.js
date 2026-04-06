@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const { OAuth2Client } = require('google-auth-library');
+const multer = require('multer');
 
 // Google OAuth client (used to verify ID tokens that the browser sends us)
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);

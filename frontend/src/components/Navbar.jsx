@@ -64,7 +64,7 @@ export default function Navbar() {
             <div className="flex items-center gap-4 relative group">
               <div className="w-10 h-10 rounded-full bg-linear-to-tr from-primary-500 to-purple-500 text-white flex items-center justify-center font-bold text-lg cursor-pointer shadow-md overflow-hidden">
                 {user.picture ? (
-                  <img src={user.picture} alt={user.name} className="w-full h-full object-cover" referrerpolicy="no-referrer" />
+                  <img src={user.picture} alt={user.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 ) : (
                   user.name.charAt(0).toUpperCase()
                 )}

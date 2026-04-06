@@ -49,7 +49,7 @@ export default function Upload() {
       toast.success('Image uploaded successfully!');
       navigate('/');
     } catch (err) {
-      toast.error(err.message === 'Upload failed' ? 'Server connection error. Check if MinIO is running.' : err.message);
+      toast.error(err.message === 'Upload failed' ? 'Server connection error. Please try again later.' : err.message);
     } finally {
       setUploading(false);
     }
